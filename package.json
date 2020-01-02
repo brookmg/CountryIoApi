@@ -1,7 +1,7 @@
 {
-  "name": "ollaapi",
+  "name": "country_io_api",
   "version": "0.1.0",
-  "description": "API to serve the universe",
+  "description": "API to serve country.io on a silver platter",
   "main": "index.js",
   "scripts": {
     "build": "babel src --out-dir dist",

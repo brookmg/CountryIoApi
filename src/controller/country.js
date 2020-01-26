@@ -1,6 +1,8 @@
 import cheerio from 'cheerio'
 import axios from 'axios'
 
+import { createCountryScheme, insertItem , deleteItem , deleteItemByCountryName, getItemById , getItemByCountryCodeISO2 , getItemByCountryCodeISO3  } from '../db/countryTable'
+
 /**
  * Handles get requests made to the country endpoint.
  * normally the country name would be in the query section 
@@ -75,10 +77,20 @@ export function handleCountryPost(req , res) {
 }
 
 export function handleCountryDelete(req , res) {
-    /** Stab Method... Nothing to delete yet */
+    if (req.body.id) deleteItem(req.body.id)
+        .then(() => res.status(200).send({ status: 200 }))
+        .catch(err => res.status(500).send(err));
+    else if (req.body.name) deleteItemByCountryName(req.body.name)
+        .then(() => res.status(200).send({ status: 200 }))
+        //.catch(err => res.status(500).send(err))
 }
 
 export function handleCountryPut(req , res) {
-    /** Stab Method... Nothing to put yet */
+    createCountryScheme()
+        .then(() => {
+            console.log(req.body)
+            if (req.body) insertItem(req.body).then(() => res.status(200).send({ status: 200}))
+                .catch(err => res.status(500).send(err))
+        })
 }
 

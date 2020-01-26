@@ -87,3 +87,15 @@ export async function getItemByCountryName(countryName) {
         country_name: countryName
     })
 }
+
+export async function updateItemByCountryName(countryName, update) {
+    return Country.query()
+        .where('country_name', countryName)
+        .update(update);
+}
+
+export async function updateItemById(id , update) {
+    return Country.query()
+        .where('id', id)
+        .update(update);
+}

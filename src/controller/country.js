@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import axios from 'axios'
 
-import { createCountryScheme, insertItem , deleteItem , deleteItemByCountryName, getItemById , getItemByCountryCodeISO2 , getItemByCountryCodeISO3, getItemByCountryName  } from '../db/countryTable'
+import { createCountryScheme, insertItem , deleteItem , deleteItemByCountryName, getItemById , getItemByCountryCodeISO2 , getItemByCountryCodeISO3, getItemByCountryName, updateItemById, updateItemByCountryName  } from '../db/countryTable'
 
 /**
  * Handles get requests made to the country endpoint.
@@ -52,36 +52,12 @@ export function handleCountryGet(req , res) {
 }
 
 export function handleCountryPost(req , res) {
-    let country = req.body.country;
-    let returnableJSON = {};
-    
-    if (!country)
-        return res.status(406).send({
-            status: 406,
-            error: `country query is required.`,
-            data: {}
-        })
-
-    axios.get(`http://country.io/${country}`).then(returned => {
-        let c = cheerio.load(returned.data);
-        let tds = c('td');
-
-        for (var i = 0; i < tds.length; i = i+3) {
-            returnableJSON[`${tds[i].children[0].children[0].data}`] = tds[i+1].children[0].data
-        }
-        
-        res.send({
-            status: 200,
-            error: {},
-            data: returnableJSON
-        })
-    }).catch(err => {
-        res.status(err.response.status).send({
-            status: err.response.status,
-            error: err.response.data,
-            data: {}
-        })
-    })
+    createCountryScheme()
+        .then(() => {
+            console.log(req.body)
+            if (req.body) insertItem(req.body).then(() => res.status(200).send({ status: 200}))
+                .catch(err => res.status(500).send(err))
+        });
 }
 
 export function handleCountryDelete(req , res) {
@@ -94,11 +70,28 @@ export function handleCountryDelete(req , res) {
 }
 
 export function handleCountryPut(req , res) {
-    createCountryScheme()
-        .then(() => {
-            console.log(req.body)
-            if (req.body) insertItem(req.body).then(() => res.status(200).send({ status: 200}))
-                .catch(err => res.status(500).send(err))
+    if (req.body.id !== undefined && req.body.update) {
+        createCountryScheme()
+            .then(() => {
+                console.log(req.body)
+                updateItemById(req.body.id , req.body.update)
+                    .then(() => res.status(200).send({ status: 200}))
+                    .catch(err => res.status(500).send(err))
+            })
+    } else if (req.body.country_name && req.body.update) {
+        createCountryScheme()
+            .then(() => {
+                console.log(req.body)
+                updateItemByCountryName(req.body.country_name , req.body.update)
+                    .then(() => res.status(200).send({ status: 200}))
+                    .catch(err => res.status(500).send(err))
+            })
+    } else {
+        console.log(req.body.id , req.body.update , req.body.country_name)
+        res.status(406).send({
+            status: 406,
+            error: 'Something is missing.'
         })
+    }
 }
 

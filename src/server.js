@@ -13,6 +13,6 @@ app.use(CountryRouter)
 
 export function start() {
     app.listen(3600, () => {
-        console.log(`We are live at http://localhost:3400/`)
+        console.log(`We are live at http://localhost:3600/`)
     })
 }

@@ -1,7 +1,7 @@
 import cheerio from 'cheerio'
 import axios from 'axios'
 
-import { createCountryScheme, insertItem , deleteItem , deleteItemByCountryName, getItemById , getItemByCountryCodeISO2 , getItemByCountryCodeISO3  } from '../db/countryTable'
+import { createCountryScheme, insertItem , deleteItem , deleteItemByCountryName, getItemById , getItemByCountryCodeISO2 , getItemByCountryCodeISO3, getItemByCountryName  } from '../db/countryTable'
 
 /**
  * Handles get requests made to the country endpoint.
@@ -21,26 +21,34 @@ export function handleCountryGet(req , res) {
             data: {}
         })
 
-    axios.get(`http://country.io/${country}`).then(returned => {
-        let c = cheerio.load(returned.data);
-        let tds = c('td');
-
-        for (var i = 0; i < tds.length; i = i+3) {
-            returnableJSON[`${tds[i].children[0].children[0].data}`] = tds[i+1].children[0].data
-        }
+    getItemByCountryName(country)
+        .then(countryDetail => {
+            res.status(200).send(
+                countryDetail.toJSON()
+            )
+        })
+        .catch(error => {
+            axios.get(`http://country.io/${country}`).then(returned => {
+                let c = cheerio.load(returned.data);
+                let tds = c('td');
         
-        res.send({
-            status: 200,
-            error: {},
-            data: returnableJSON
+                for (var i = 0; i < tds.length; i = i+3) {
+                    returnableJSON[`${tds[i].children[0].children[0].data}`] = tds[i+1].children[0].data
+                }
+                
+                res.send({
+                    status: 200,
+                    error: {},
+                    data: returnableJSON
+                })
+            }).catch(err => {
+                res.status(err.response ? err.response.status : 500).send({
+                    status: err.response ? err.response.status : 500,
+                    error: err.response ? err.response.data : 'Internal Error',
+                    data: {}
+                })
+            })
         })
-    }).catch(err => {
-        res.status(err.response.status).send({
-            status: err.response.status,
-            error: err.response.data,
-            data: {}
-        })
-    })
 }
 
 export function handleCountryPost(req , res) {

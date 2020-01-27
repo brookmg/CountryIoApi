@@ -1,4 +1,5 @@
 const { ApolloServer , gql } = require('apollo-server')
+const CountryTable = require('../db/countryTable')
 
 const typeDefs = gql`
     type Country {
@@ -46,19 +47,16 @@ const typeDefs = gql`
         country(name : String) : Country
         countryById(id : Int) : Country
     }
+
 `
 
 const resolvers = {
     Query : {
-        country: (name) => {
-            return {
-                country_name: 'Ethiopia'
-            }
+        country: (_, args) => {
+            return CountryTable.getItemByCountryName(args.name)
         },
-        countryById: (id) => {
-            return {
-                country_name: 'Ethiopia'
-            }
+        countryById: (_, args) => {
+            return CountryTable.getItemById(args.id)
         }
     }
 }
@@ -66,6 +64,6 @@ const resolvers = {
 export async function startApolloServer() {
     const aServer = new ApolloServer({ typeDefs , resolvers });
     return aServer.listen({ port: 3700 }).then( url => {
-        console.log(`Server running on:` , url)
+        console.log(`Server running on:` , url.url)
     })
 }

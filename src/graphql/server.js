@@ -43,9 +43,55 @@ const typeDefs = gql`
         gdp_per_capita: String
     }
 
+    input CountryInput {
+        country_name: String
+        dialing_code: String
+        iso2: String
+        iso3: String
+        capital: String
+        main_lang: String
+
+        currency: String
+        gdp: String
+        population: String
+
+        # GEO ---
+        continent: String
+        location: String
+        land: String
+        climate: String
+        national_hazzards: String
+        note: String
+        terrain: String
+
+        # DEMO --- 
+        life_exp: String
+        median_age: String
+        birth_date: String
+        death_rate: String
+        sex_ratio: String
+        literacy: String
+
+        # TRANSPORTATION ---
+        roadways: String
+        railways: String
+        airports: String
+        waterways: String
+        heliports: String
+        airports_paved: String
+
+        # ECONOMY
+        gdp_per_capita: String
+    }
+
     type Query {
         country(name : String) : Country
         countryById(id : Int) : Country
+
+        #Auth required mutations
+        deleteCountry(name: String) : [Country]
+        updateCountry(id: Int, update: CountryInput) : Country
+        addCountry(country: CountryInput) : Country
     }
 
 `
@@ -55,9 +101,25 @@ const resolvers = {
         country: (_, args) => {
             return CountryTable.getItemByCountryName(args.name)
         },
+
         countryById: (_, args) => {
             return CountryTable.getItemById(args.id)
+        },
+
+        addCountry: (_ , args, parent) => {
+            return CountryTable.insertItem(args.country)
+        },
+
+        deleteCountry: (_, args, parent) => {
+            return CountryTable.deleteItemByCountryName(args.name)
+        },
+
+        updateCountry: async (_, args, parent) => {
+            const updated = await CountryTable.updateItemById(args.id , args.update)
+            console.log(updated)
+            return updated
         }
+
     }
 }
 

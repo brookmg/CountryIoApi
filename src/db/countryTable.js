@@ -63,7 +63,7 @@ export async function deleteItem(id) {
 }
 
 export async function deleteItemByCountryName(country) {
-    return Country.query().delete().where('country_name' , country).execute();
+    return Country.query().delete().where('country_name' , country).returning('*');
 }
 
 export async function getItemById(id) {
@@ -91,11 +91,10 @@ export async function getItemByCountryName(countryName) {
 export async function updateItemByCountryName(countryName, update) {
     return Country.query()
         .where('country_name', countryName)
-        .update(update);
+        .updateAndFetch(update);
 }
 
 export async function updateItemById(id , update) {
     return Country.query()
-        .where('id', id)
-        .update(update);
+        .updateAndFetchById(id, update);
 }

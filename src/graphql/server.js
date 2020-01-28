@@ -1,5 +1,8 @@
+import { authGraphQL } from '../util/auth';
+
 const { ApolloServer , gql } = require('apollo-server')
 const CountryTable = require('../db/countryTable')
+const User = require('../db/userTable')
 
 const typeDefs = gql`
     type Country {
@@ -106,15 +109,22 @@ const resolvers = {
             return CountryTable.getItemById(args.id)
         },
 
-        addCountry: (_ , args, parent) => {
+        addCountry: (_ , args, { user }) => {
+            if (user == null) throw Error("Authentication Failed - No user present")
             return CountryTable.insertItem(args.country)
         },
 
-        deleteCountry: (_, args, parent) => {
+        deleteCountry: async (_, args, { user }) => {
+            if (user == null) throw Error("Authentication Failed - No user present")
+
+            if (! await User.isUserAdmin(user.id)) throw Error("Authentication Failed - User not an admin")
             return CountryTable.deleteItemByCountryName(args.name)
         },
 
-        updateCountry: async (_, args, parent) => {
+        updateCountry: async (_, args, { user }) => {
+            if (user == null) throw Error("Authentication Failed - No user present")
+
+            if (! await User.isUserAdmin(user.id)) throw Error("Authentication Failed - User not an admin")
             const updated = await CountryTable.updateItemById(args.id , args.update)
             console.log(updated)
             return updated
@@ -124,7 +134,9 @@ const resolvers = {
 }
 
 export async function startApolloServer() {
-    const aServer = new ApolloServer({ typeDefs , resolvers });
+    const aServer = new ApolloServer({ typeDefs , resolvers, async context({req /* Coming from express */}) {
+        return { user: await authGraphQL(req) }
+    } });
     return aServer.listen({ port: 3700 }).then( url => {
         console.log(`Server running on:` , url.url)
     })

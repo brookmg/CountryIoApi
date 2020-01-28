@@ -19,3 +19,14 @@ export const authMiddleWare = (req, res, next) => {
     });
     
 }
+
+export const authGraphQL = async (req) => {
+    if (!req.headers.authorization) return null;
+
+    let tokenRaw = req.headers.authorization;
+    tokenRaw = tokenRaw.split(' ')[1];
+
+    const userId = await User.verifyToken(tokenRaw);
+    return User.getUserById(userId.id);
+
+}

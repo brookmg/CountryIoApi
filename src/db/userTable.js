@@ -34,6 +34,10 @@ export async function addUser(user) {
 
 }
 
+export async function getUserById(id) {
+    return User.query().findById(id)
+}
+
 export async function newToken(user) {
     return jwt.sign({id : user.id} , '0x03BAD20FAE')    // Will be changed to something like RSA , or fetched from env variables
 }
